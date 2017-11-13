@@ -1,0 +1,125 @@
+.data
+A1: .asciiz "Alpha" 
+B1: .asciiz "Bravo"
+C1: .asciiz "China"
+D1: .asciiz "Delta"
+E1: .asciiz "Echo"
+F1: .asciiz "Foxtrot"
+G1: .asciiz "Golf"
+H1: .asciiz "Hotel"
+I1: .asciiz "India"
+J1: .asciiz "Juliet"
+K1: .asciiz "Kilo"
+L1: .asciiz "Lima"
+M1: .asciiz "Mary"
+N1: .asciiz "November"
+O1: .asciiz "Oscar"
+P1: .asciiz "Paper"
+Q1: .asciiz "Quebec"
+R1: .asciiz "Research"
+S1: .asciiz "Sierra"
+T1: .asciiz "Tango"
+U1: .asciiz "Uniform"
+V1: .asciiz "Victor"
+W1: .asciiz "Whisky"
+X1: .asciiz "X-ray"
+Y1: .asciiz "Yankee"
+Z1: .asciiz "Zulu"
+letters: .word A1,B1,C1,D1,E1,F1,G1,H1,I1,J1,K1,L1,M1,N1,O1,P1,Q1,R1,S1,T1,U1,V1,W1,X1,Y1,Z1
+
+zero: .asciiz "Zero"
+one: .asciiz  "First"
+two: .asciiz "Second"
+three: .asciiz "Third"
+four: .asciiz "Fourth"
+five: .asciiz "Fifth"
+six: .asciiz "Sixth"
+seven: .asciiz "Seventh"
+eight: .asciiz "Eighth"
+nine: .asciiz "Ninth"
+numbers: .word zero,one,two,three,four,five,six,seven,eight,nine
+
+.text
+and $s0,$zero,$t0
+loop:
+li $v0,12 #get a charactor from keyboard input and store it into $v0
+syscall 
+or $t1,$v0,0 #save the result to $t1
+
+li $a0,10#change line 
+li $v0,11
+syscall
+
+slti $s0,$t1,48
+bne $s0,$zero,other
+
+sge $s0,$t1,122
+bne $s0,$zero,other
+
+#48 <= input < 122
+slti $s0,$t1,58 
+bne $s0,$zero,number# 48 <= input < 58
+
+#58 <= input < 122
+slti $s0,$t1,65  #58 <= input < 65
+bne $s0,$zero,other
+
+#65 <= input < 122
+slti $s0,$t1,91 
+bne $s0,$zero,capital# 65 <= input < 91
+
+#91 <= input < 122
+slti $s0,$t1,97
+bne $s0,$zero,other# 91 <= input < 97
+
+#97 <= input < 122
+j lowercase
+
+capital:
+subi $t1, $t1, 65 #compute the offset from the ACSII code of letter "A"
+sll $t1,$t1,2
+lw $a0, letters($t1)
+
+li $v0, 4 #print the string
+syscall
+j endIf
+
+lowercase:
+subi $t1, $t1, 97 #compute the offset from the ACSII code of letter "a"
+sll $t1,$t1,2 #multiply by 4
+lw $a0, letters($t1)#find the corresponding word whose initial letter is capital
+lb $t2,($a0) #store the first letter of the word to $t2
+add $t2,$t2,32#change it to a lowercase letter
+sb $t2,($a0)
+
+li $v0, 4 #print the string
+syscall
+
+lb $t2,($a0) #change the first letter of the word back to a capital letter
+sub $t2,$t2,32
+sb $t2,($a0)
+j endIf
+
+number:
+subi $t1, $t1, 48 #compute the offset from the ACSII code of letter "0"
+sll $t1,$t1,2
+lw $a0, numbers($t1)
+li $v0, 4 #print the string
+syscall
+j endIf
+
+other:
+beq $t1,63,exit
+li $a0,42#print a "*"
+li $v0,11
+syscall
+
+endIf:
+li $a0,10 #change a line
+li $v0,11
+syscall
+j loop
+
+exit:
+li $v0 10
+syscall
