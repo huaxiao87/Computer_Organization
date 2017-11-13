@@ -1,0 +1,65 @@
+.data
+success: .asciiz "Success! Location: "
+fail: .asciiz "Fail!"
+str: .asciiz 
+
+.text
+and $s0,$zero,$t0
+
+la $a0,str
+li $a1,255
+li $v0,8 #get a string from keyboard input and store it into $v0
+syscall 
+
+or $t1,$v0,0 #save the string to $t1
+
+inputChar:
+li $v0,12 #get a char from keyboard
+syscall
+beq $v0,63,exit
+or $t2,$v0,0 #save the char to $t2
+
+li $a0,10#change line 
+li $v0,11
+syscall
+
+and $t3,$t3,$zero #t3 as the index
+
+lookForChar:
+beq $t2,10,notFound
+lb $t4,str($t3)
+beq $t4,$t2,found
+beq $t4,0,notFound
+add $t3,$t3,1
+
+j lookForChar
+
+found:
+la $a0,success
+li $v0, 4 #print the string
+syscall
+
+add $a0,$t3,1
+li $v0, 1 #print the index
+syscall
+
+li $a0,10#change line 
+li $v0,11
+syscall
+
+j inputChar
+
+notFound:
+la $a0,fail
+li $v0, 4 #print the fail information
+syscall
+
+li $a0,10#change line 
+li $v0,11
+syscall
+
+j inputChar
+
+exit:
+li $v0 10
+syscall
